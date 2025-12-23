@@ -1,0 +1,5 @@
+{
+  "name": "Taipei City Tourism Map",
+  "description": "A comprehensive tourism portal for Taipei City attractions featuring real-time data from Taipei Travel Open API, language switching, personal notes, and search history.",
+  "requestFramePermissions": []
+}
