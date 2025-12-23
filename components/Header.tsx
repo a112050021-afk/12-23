@@ -15,34 +15,32 @@ const Header: React.FC<HeaderProps> = ({ lang, onLangChange, activeTab, onTabCha
   
   const langs: { code: LangCode; label: string }[] = [
     { code: 'zh-tw', label: '繁中' },
-    { code: 'zh-cn', label: '简中' },
+    { code: 'zh-cn', label: '簡中' },
     { code: 'en', label: 'EN' },
     { code: 'ja', label: '日文' },
     { code: 'ko', label: '한국어' }
   ];
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-30">
-      <div className="max-w-4xl mx-auto px-4 py-4 flex flex-col items-center gap-4">
+    <header className="bg-white/70 backdrop-blur-md shadow-sm sticky top-0 z-30 transition-all">
+      <div className="max-w-4xl mx-auto px-4 py-6 flex flex-col items-center gap-6">
         {/* Title */}
-        <div className="flex flex-col items-center">
-            <h1 className="text-3xl font-bold text-[#8B5E3C] tracking-widest uppercase">
+        <div className="flex flex-col items-center group">
+            <h1 className="text-2xl sm:text-3xl font-light text-[#5C5C5C] tracking-[0.3em] uppercase">
                 {t.title}
             </h1>
-            <div className="h-1 w-24 bg-[#8B5E3C] mt-1"></div>
+            <div className="h-[1px] w-12 bg-[#A88E6D] mt-2 group-hover:w-24 transition-all duration-700"></div>
         </div>
 
         {/* Lang & Tabs Container */}
-        <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-4 mt-2">
+        <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-4">
             {/* Language Selector */}
-            <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-[#8B5E3C] flex items-center justify-center text-white text-[10px]">
-                    <i className="fas fa-globe"></i>
-                </div>
+            <div className="flex items-center gap-2 border-b border-gray-100 pb-1">
+                <i className="fas fa-globe text-[#A88E6D] text-xs"></i>
                 <select 
                     value={lang}
                     onChange={(e) => onLangChange(e.target.value as LangCode)}
-                    className="bg-transparent border-none text-sm font-medium text-[#8B5E3C] focus:ring-0 cursor-pointer"
+                    className="bg-transparent border-none text-xs font-medium text-gray-500 focus:ring-0 cursor-pointer"
                 >
                     {langs.map(l => (
                         <option key={l.code} value={l.code}>{l.label}</option>
@@ -51,25 +49,32 @@ const Header: React.FC<HeaderProps> = ({ lang, onLangChange, activeTab, onTabCha
             </div>
 
             {/* Navigation Tabs */}
-            <nav className="flex items-center gap-6">
+            <nav className="flex items-center gap-8">
                 <TabButton 
                     active={activeTab === AppTab.ATTRACTIONS} 
                     onClick={() => onTabChange(AppTab.ATTRACTIONS)}
-                    icon="map-marked-alt"
+                    icon="compass"
                     label={t.tabAttractions}
-                    color="#8B5E3C"
+                    color="#A88E6D"
+                />
+                <TabButton 
+                    active={activeTab === AppTab.FAVORITES} 
+                    onClick={() => onTabChange(AppTab.FAVORITES)}
+                    icon="heart"
+                    label={t.tabFavorites}
+                    color="#8E9AAF"
                 />
                 <TabButton 
                     active={activeTab === AppTab.NOTES} 
                     onClick={() => onTabChange(AppTab.NOTES)}
-                    icon="sticky-note"
+                    icon="feather"
                     label={t.tabNotes}
                     color="#A3B18A"
                 />
                 <TabButton 
                     active={activeTab === AppTab.HISTORY} 
                     onClick={() => onTabChange(AppTab.HISTORY)}
-                    icon="history"
+                    icon="leaf"
                     label={t.tabHistory}
                     color="#A88E6D"
                 />
@@ -91,15 +96,15 @@ interface TabButtonProps {
 const TabButton: React.FC<TabButtonProps> = ({ active, onClick, icon, label, color }) => (
     <button 
         onClick={onClick}
-        className={`flex items-center gap-2 pb-1 transition-all duration-300 ${
+        className={`flex flex-col items-center gap-1 transition-all duration-500 ${
             active 
-            ? `border-b-2 border-[${color}] text-[${color}] font-bold` 
-            : 'text-gray-400 border-b-2 border-transparent hover:text-gray-600'
+            ? `text-[${color}] scale-110` 
+            : 'text-gray-300 hover:text-gray-500'
         }`}
-        style={{ borderColor: active ? color : 'transparent', color: active ? color : undefined }}
+        style={{ color: active ? color : undefined }}
     >
-        <i className={`fas fa-${icon}`}></i>
-        <span className="text-sm hidden sm:inline">{label}</span>
+        <i className={`fas fa-${icon} text-sm`}></i>
+        <span className="text-[10px] tracking-widest font-medium uppercase">{label}</span>
     </button>
 );
 

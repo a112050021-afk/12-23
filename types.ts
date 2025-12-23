@@ -59,6 +59,7 @@ export interface SearchRecord {
 
 export enum AppTab {
   ATTRACTIONS = 'attractions',
+  FAVORITES = 'favorites',
   NOTES = 'notes',
   HISTORY = 'history'
 }

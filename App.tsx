@@ -28,6 +28,11 @@ const App: React.FC = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
+  const [favorites, setFavorites] = useState<number[]>(() => {
+    const saved = localStorage.getItem('taipei_favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const fetchData = useCallback(async (currentLang: LangCode) => {
     setIsLoading(true);
     setError(null);
@@ -54,6 +59,10 @@ const App: React.FC = () => {
     localStorage.setItem('taipei_history', JSON.stringify(history));
   }, [history]);
 
+  useEffect(() => {
+    localStorage.setItem('taipei_favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
   const handleSearch = (k: string) => {
     setKeyword(k);
     setActiveTab(AppTab.ATTRACTIONS);
@@ -75,6 +84,12 @@ const App: React.FC = () => {
     setKeyword('');
   };
 
+  const toggleFavorite = (id: number) => {
+    setFavorites(prev => 
+      prev.includes(id) ? prev.filter(fid => fid !== id) : [...prev, id]
+    );
+  };
+
   const addNote = (id: number, name: string, text: string, photo?: string) => {
     setNotes(prev => {
       const filtered = prev.filter(n => n.attractionId !== id);
@@ -88,7 +103,6 @@ const App: React.FC = () => {
 
   const clearHistory = () => setHistory([]);
 
-  // 模糊搜尋邏輯 (保留先前要求的功能)
   const fuzzyMatch = (text: string, query: string) => {
     const q = query.toLowerCase().replace(/\s/g, '');
     const t = text.toLowerCase();
@@ -101,17 +115,20 @@ const App: React.FC = () => {
   };
 
   const filteredAttractions = useMemo(() => {
+    if (activeTab === AppTab.FAVORITES) {
+      return attractions.filter(a => favorites.includes(a.id));
+    }
     if (!keyword.trim()) return attractions;
     return attractions.filter(a => 
       fuzzyMatch(a.name, keyword) || 
       fuzzyMatch(a.introduction, keyword)
     );
-  }, [attractions, keyword]);
+  }, [attractions, keyword, activeTab, favorites]);
 
   const t = getT(lang);
 
   return (
-    <div className="min-h-screen pb-12">
+    <div className="min-h-screen pb-12 transition-all duration-500">
       <Header 
         lang={lang} 
         onLangChange={handleLanguageChange} 
@@ -120,26 +137,29 @@ const App: React.FC = () => {
       />
 
       <main className="max-w-4xl mx-auto px-4 mt-8">
-        {activeTab === AppTab.ATTRACTIONS && (
+        {(activeTab === AppTab.ATTRACTIONS || activeTab === AppTab.FAVORITES) && (
           <>
-            {/* 已移除 MapSection */}
-            <SearchSection 
-              lang={lang} 
-              onSearch={handleSearch} 
-              initialValue={keyword}
-            />
+            {activeTab === AppTab.ATTRACTIONS && (
+              <SearchSection 
+                lang={lang} 
+                onSearch={handleSearch} 
+                initialValue={keyword}
+              />
+            )}
             
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-20 text-[#8B5E3C]">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8B5E3C] mb-4"></div>
-                <p>{t.loading}</p>
+            {isLoading && attractions.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-[#A88E6D]">
+                <div className="animate-pulse flex flex-col items-center">
+                    <i className="fas fa-feather-alt text-4xl mb-4"></i>
+                    <p className="tracking-widest">{t.loading}</p>
+                </div>
               </div>
             ) : error ? (
               <div className="text-center py-20">
-                <p className="text-red-500 mb-4">{t.error}</p>
+                <p className="text-red-300 italic mb-4">{t.error}</p>
                 <button 
                   onClick={() => fetchData(lang)}
-                  className="bg-[#8B5E3C] text-white px-6 py-2 rounded-full hover:opacity-90 transition shadow-md"
+                  className="border border-[#A88E6D] text-[#A88E6D] px-6 py-2 rounded-full hover:bg-[#A88E6D] hover:text-white transition shadow-sm"
                 >
                   {t.retry}
                 </button>
@@ -149,7 +169,9 @@ const App: React.FC = () => {
                 lang={lang}
                 attractions={filteredAttractions} 
                 onSelect={setSelectedAttraction} 
-                hasKeyword={!!keyword}
+                hasKeyword={!!keyword && activeTab === AppTab.ATTRACTIONS}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
               />
             )}
           </>
@@ -185,6 +207,8 @@ const App: React.FC = () => {
           lang={lang}
           attraction={selectedAttraction} 
           note={notes.find(n => n.attractionId === selectedAttraction.id)}
+          isFavorite={favorites.includes(selectedAttraction.id)}
+          onToggleFavorite={() => toggleFavorite(selectedAttraction.id)}
           onClose={() => setSelectedAttraction(null)}
           onSaveNote={addNote}
         />
